@@ -13255,6 +13255,8 @@ The optimal depth for this model with the current number of points would be max_
 <p>Why: The optimal curve is the one where the test score is greater, proving that the model can predict the result based on unknown values.
 Bias starts to decrease as the complexity of the model increases, but after max_depth 3 variance gets higher and overfitting starts to happen, decreasing test score.</p>
 <p>Adding more traning points would help generalize the model as depth increases, but training data would have to increase exponentially compared to the depth.</p>
+<p>To make it more clear, adding more data points avoids variance and overfitting, bringing both curves together - traning and testing -. Depth 6 and 10 would benefit from more data since the model is more complex.</p>
+<p>Increasing complexity makes the model take more variability into account, increasing training data score. Bringing both curves up. You can see it happen if you compare depth 1 to 3.</p>
 
 </div>
 </div>
@@ -14064,6 +14066,8 @@ Predicted selling price for Client 3&#39;s home: $930,784.62
 Considering that we have houses ranging from $105000 up to $1024800, it's accurate to estimate that client 2, having lower income, less teachers per student and less rooms in the house, would have to sell his property for the lowest price.</p>
 <p>The opposite happens to client 3. It's the house with the greater number of rooms, for the richest people, and with the lesser number of students per teacher. This justifies the price being the highest.</p>
 <p>Client 1, being between 2 and 3 in all parameters, should obviously have a house whose price is also in between.</p>
+<p>Finally, we can compare to the initial statistics by saying that the poorest client is the closest to the minimum price (105000), the richest to the maximum (1024800) and client 1 close to the median (438900).
+Predicting those three scenarios was useful to see how our model works on both extremes and the average.</p>
 
 </div>
 </div>
