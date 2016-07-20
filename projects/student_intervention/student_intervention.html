@@ -12578,10 +12578,11 @@ This way we can prove that our model is efficient when estimating results of wha
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[103]:</div>
+<div class="prompt input_prompt">In&nbsp;[105]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="kn">from</span> <span class="nn">sklearn.grid_search</span> <span class="kn">import</span> <span class="n">GridSearchCV</span>
+<span class="kn">from</span> <span class="nn">sklearn.cross_validation</span> <span class="kn">import</span> <span class="n">StratifiedShuffleSplit</span>
 <span class="kn">from</span> <span class="nn">sklearn</span> <span class="kn">import</span> <span class="n">metrics</span>
 
 <span class="n">rs</span> <span class="o">=</span> <span class="mi">1</span>
@@ -12615,8 +12616,11 @@ This way we can prove that our model is efficient when estimating results of wha
 <span class="c1"># Make an f1 scoring function using &#39;make_scorer&#39; </span>
 <span class="n">f1_scorer</span> <span class="o">=</span> <span class="n">metrics</span><span class="o">.</span><span class="n">make_scorer</span><span class="p">(</span><span class="n">metrics</span><span class="o">.</span><span class="n">f1_score</span><span class="p">,</span> <span class="n">pos_label</span><span class="o">=</span><span class="s2">&quot;yes&quot;</span><span class="p">)</span>
 
+<span class="c1"># Create the Stratified Shuffle Split object</span>
+<span class="n">sss</span> <span class="o">=</span> <span class="n">StratifiedShuffleSplit</span><span class="p">(</span><span class="n">y_train</span><span class="p">,</span> <span class="n">n_iter</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.24</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+
 <span class="c1"># Perform grid search on the classifier using the f1_scorer as the scoring method</span>
-<span class="n">grid_obj</span> <span class="o">=</span> <span class="n">GridSearchCV</span><span class="p">(</span><span class="n">clf</span><span class="p">,</span> <span class="n">parameters</span><span class="p">,</span> <span class="n">scoring</span><span class="o">=</span><span class="n">f1_scorer</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="n">grid_obj</span> <span class="o">=</span> <span class="n">GridSearchCV</span><span class="p">(</span><span class="n">clf</span><span class="p">,</span> <span class="n">parameters</span><span class="p">,</span> <span class="n">scoring</span><span class="o">=</span><span class="n">f1_scorer</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="n">sss</span><span class="p">)</span>
 
 <span class="c1"># Fit the grid search object to the training data and find the optimal parameters</span>
 <span class="n">grid_obj</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
@@ -12641,16 +12645,16 @@ This way we can prove that our model is efficient when estimating results of wha
 
 <div class="output_area"><div class="prompt"></div>
 <div class="output_subarea output_stream output_stdout output_text">
-<pre>Made predictions in 0.0041 seconds.
+<pre>Made predictions in 0.0040 seconds.
 Untuned model has a training F1 score of 0.8646.
-Made predictions in 0.0015 seconds.
+Made predictions in 0.0014 seconds.
 Untuned model has a testing F1 score of 0.8387.
-best params: {&#39;kernel&#39;: &#39;rbf&#39;, &#39;C&#39;: 0.65, &#39;decision_function_shape&#39;: None, &#39;gamma&#39;: &#39;auto&#39;}
+best params: {&#39;kernel&#39;: &#39;rbf&#39;, &#39;C&#39;: 0.6, &#39;decision_function_shape&#39;: None, &#39;gamma&#39;: &#39;auto&#39;}
 
 
 Start tunning!
-Made predictions in 0.0045 seconds.
-Tuned model has a training F1 score of 0.8337.
+Made predictions in 0.0044 seconds.
+Tuned model has a training F1 score of 0.8292.
 Made predictions in 0.0014 seconds.
 Tuned model has a testing F1 score of 0.8408.
 </pre>
