@@ -1,4 +1,5 @@
 import random
+import numpy as np
 from environment import Agent, Environment
 from planner import RoutePlanner
 from simulator import Simulator
@@ -10,11 +11,13 @@ class LearningAgent(Agent):
         super(LearningAgent, self).__init__(env)  # sets self.env = env, state = None, next_waypoint = None, and a default color
         self.color = 'red'  # override color
         self.planner = RoutePlanner(self.env, self)  # simple route planner to get next_waypoint
-        # TODO: Initialize any additional variables here
+        self.q_table = {};
+        self.alpha = 0.5
+        self.possible_actions = ('forward', 'left', 'right', None);
 
     def reset(self, destination=None):
         self.planner.route_to(destination)
-        # TODO: Prepare for a new trip; reset any variables here, if required
+        self.state = {};
 
     def update(self, t):
         # Gather inputs
@@ -24,7 +27,7 @@ class LearningAgent(Agent):
 
         # Update state
         self.state = {
-            "deadline": deadline,
+            # "deadline": deadline,
             "light": inputs["light"],
             "oncoming": inputs["oncoming"],
             "left": inputs["left"],
@@ -32,13 +35,23 @@ class LearningAgent(Agent):
             "next_waypoint": self.next_waypoint
         }
 
-        # TODO: Select action according to your policy
-        action = random.choice((None, 'forward', 'left', 'right'))
+        # Unique hash to represent this state when learning
+        state_hash = hash(frozenset(self.state.items()))
+        # Create dictionary to hold q values
+        if not state_hash in self.q_table:
+            self.q_table[state_hash] = dict((a, 0) for a in self.possible_actions)
+
+        # Select action according to your policy
+        action = random.choice(self.possible_actions)
+        if (random.random() > 0.1): # Avoid getting locked in local optima
+            q_values = [(action, self.q_table[state_hash][action]) for action in self.possible_actions]
+            action = q_values[np.argmax(q_values, axis=0)[1]][0]
 
         # Execute action and get reward
         reward = self.env.act(self, action)
 
-        # TODO: Learn policy based on state, action, reward
+        # Learn policy based on state, action, reward
+        self.q_table[state_hash][action] = (1.0 - self.alpha) * self.q_table[state_hash][action] + self.alpha * reward
 
         print "LearningAgent.update(): deadline = {}, inputs = {}, action = {}, reward = {}".format(deadline, inputs, action, reward)  # [debug]
 
@@ -49,11 +62,12 @@ def run():
     # Set up environment and agent
     e = Environment()  # create environment (also adds some dummy traffic)
     a = e.create_agent(LearningAgent)  # create agent
-    e.set_primary_agent(a, enforce_deadline=False)  # specify agent to track
+    e.set_primary_agent(a, enforce_deadline=True)  # specify agent to track
     # NOTE: You can set enforce_deadline=False while debugging to allow longer trials
 
     # Now simulate it
     sim = Simulator(e, update_delay=0.5, display=True)  # create simulator (uses pygame when display=True, if available)
+    # sim = Simulator(e, update_delay=0, display=False)
     # NOTE: To speed up simulation, reduce update_delay and/or set display=False
 
     sim.run(n_trials=100)  # run for a specified number of trials
