@@ -12,12 +12,15 @@ class LearningAgent(Agent):
         self.color = 'red'  # override color
         self.planner = RoutePlanner(self.env, self)  # simple route planner to get next_waypoint
         self.q_table = {};
-        self.alpha = 0.5
+        self.alpha = 0.1
+        self.gamma = -0.01
         self.possible_actions = ('forward', 'left', 'right', None);
+        self.total_reward = 0
 
     def reset(self, destination=None):
         self.planner.route_to(destination)
         self.state = {};
+        self.total_reward = 0
 
     def update(self, t):
         # Gather inputs
@@ -43,17 +46,20 @@ class LearningAgent(Agent):
 
         # Select action according to your policy
         action = random.choice(self.possible_actions)
-        if (random.random() > 0.1): # Avoid getting locked in local optima
+        if (random.random() > 0.01): # Avoid getting locked in local optima
             q_values = [(action, self.q_table[state_hash][action]) for action in self.possible_actions]
             action = q_values[np.argmax(q_values, axis=0)[1]][0]
 
         # Execute action and get reward
-        reward = self.env.act(self, action)
+        reward = self.env.act(self, action) + self.gamma
+        if reward < self.gamma:
+            print "penalty =["
+        self.total_reward += reward
 
         # Learn policy based on state, action, reward
         self.q_table[state_hash][action] = (1.0 - self.alpha) * self.q_table[state_hash][action] + self.alpha * reward
 
-        print "LearningAgent.update(): deadline = {}, inputs = {}, action = {}, reward = {}".format(deadline, inputs, action, reward)  # [debug]
+        # print "LearningAgent.update(): deadline = {}, inputs = {}, action = {}, reward = {}".format(deadline, inputs, action, reward)  # [debug]
 
 
 def run():
@@ -66,8 +72,8 @@ def run():
     # NOTE: You can set enforce_deadline=False while debugging to allow longer trials
 
     # Now simulate it
-    sim = Simulator(e, update_delay=0.5, display=True)  # create simulator (uses pygame when display=True, if available)
-    # sim = Simulator(e, update_delay=0, display=False)
+    # sim = Simulator(e, update_delay=0.5, display=True)  # create simulator (uses pygame when display=True, if available)
+    sim = Simulator(e, update_delay=0, display=False)
     # NOTE: To speed up simulation, reduce update_delay and/or set display=False
 
     sim.run(n_trials=100)  # run for a specified number of trials
