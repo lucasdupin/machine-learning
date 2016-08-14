@@ -22,7 +22,15 @@ class LearningAgent(Agent):
         inputs = self.env.sense(self)
         deadline = self.env.get_deadline(self)
 
-        # TODO: Update state
+        # Update state
+        self.state = {
+            "deadline": deadline,
+            "light": inputs["light"],
+            "oncoming": inputs["oncoming"],
+            "left": inputs["left"],
+            "right": inputs["right"],
+            "next_waypoint": self.next_waypoint
+        }
 
         # TODO: Select action according to your policy
         action = random.choice((None, 'forward', 'left', 'right'))
