@@ -114,6 +114,8 @@ Chosen values:
   random_direction: 0.01  
 ```
 
+Commit: https://github.com/lucasdupin/machine-learning/commit/ef81ffdcdef2264997562f4cf6bb1bae04201ec5
+
 Having **high gammas** make the car move accepting penalties, since staying where you are is as bad as doing something wrong. **High alphas** make it ignore what it had already learned before.  
 Finally, high **random direction rates** make it look erratic even though it might still be learning. This feature **must** be turned of while executing the model, we don't want cars taking random actions while driving, right?
 
