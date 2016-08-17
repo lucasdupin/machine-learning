@@ -94,76 +94,42 @@ I also implemented a feature to avoid getting stuck in local optima, by randomly
 **QUESTION:** Report the different values for the parameters tuned in your basic implementation of Q-Learning. For which set of parameters does the agent perform best? How well does the final driving agent perform?
 
 The parameters used for tuning were: "alpha", "gamma", "number of trials" and "random direction rate".
-You can check *some* of the results by looking into these files, each file name contains the values used:
+After training the algorithm for 100 times, I turned off "random choices" to be able to compute the results without stochasticity.
+Please consider the following table:
 
-```
-  100_trials_0.1_alpha_-0.1_gamma.txt
-  100_trials_0.1_alpha_-0.01_gamma.txt
-  100_trials_0.1_alpha_-2_gamma.txt
-  100_trials_0.1_alpha_0_gamma.txt
-```
+| Random rate | Alpha | Gamma  | Mean score | number of penalties | out of time |
+| ----------- | ----- | ------ | ----------- | ------------------- | ----------- |
+|    0.0  |    0.10  | -0.10 | 21.13    |    0 |    0 |
+|    0.0  |    0.10  | -1.00 | 6.0    |    3 |    1 |
+|    0.0  |    0.50  | -0.10 | 22.07    |    0 |    0 |
+|    0.0  |    0.50  | -1.00 | 8.5    |    1 |    0 |
+|    0.1  |    0.10  | -0.10 | 22.74    |    0 |    0 |
+|    0.1  |    0.10  | -1.00 | 10.8    |    0 |    0 |
+|    0.1  |    0.50  | -0.10 | 21.51    |    0 |    0 |
+|    0.1  |    0.50  | -1.00 | 11.1    |    0 |    0 |
+|    0.5  |    0.10  | -0.10 | 18.85    |    0 |    0 |
+|    0.5  |    0.10  | -1.00 | 10.5    |    0 |    0 |
+|    0.5  |    0.50  | -0.10 | 19.4    |    0 |    0 |
+|    0.5  |    0.50  | -1.00 | 9.3    |    0 |    0 |
 
 I also tried to incorporate *deadline* into the state but it takes too long to train without any perceived improvement.
 
-Chosen values:
+**Random rates** bigger than 0 keep Q from getting stuck. It's clear that the worst results had `random_choice = 0`  
+**Alpha** only makes a difference when `random_choice` is set to 0, this happens because it's easier to make the algorithm change it's mind with higher alphas.  
+**Gammas** closer to 0 result in no penalties, since there it's ok to take longer to reach the destination, and it ended up not affecting the number of times we ran out of time.  
 
+I consider the model well trained since the final reward is always positive and most of the time there are no penalties and the number of steps is met.
+
+Optimal set:
 ```
-  alpha: 0.1  
-  gamma: -0.01  
-  trials: 100  
-  random_direction: 0.01  
+random rate: 0.1
+alpha: 0.1
+gamma: -0.1
 ```
-
-Commit: https://github.com/lucasdupin/machine-learning/commit/ef81ffdcdef2264997562f4cf6bb1bae04201ec5
-
-Having **high gammas** make the car move accepting penalties, since staying where you are is as bad as doing something wrong. **High alphas** make it ignore what it had already learned before.  
-Finally, high **random direction rates** make it look erratic even though it might still be learning. This feature **must** be turned of while executing the model, we don't want cars taking random actions while driving, right?
 
 **QUESTION:** Does your agent get close to finding an optimal policy, i.e. reach the destination in the minimum possible time, and not incur any penalties? How would you describe an optimal policy for this problem?
 
-After a couple iterations it already starts to take fewer penalties. And it will try to keep behaving that way as long as gamma is low.
-Take a look at this output, it had only 1 penalty during the last 10 trials:
+After a couple iterations it already starts to take fewer penalties, and after trained, with the optimal set mentioned above, it's more than satisfactory.
 
-```
-Simulator.run(): Trial 91
-Environment.reset(): Trial set up with start = (8, 6), destination = (1, 2), deadline = 55
-RoutePlanner.route_to(): destination = (1, 2)
-Environment.act(): Primary agent has reached destination! 15.84
-Simulator.run(): Trial 92
-Environment.reset(): Trial set up with start = (8, 5), destination = (4, 1), deadline = 40
-RoutePlanner.route_to(): destination = (4, 1)
-Environment.act(): Primary agent has reached destination! 13.83
-Simulator.run(): Trial 93
-Environment.reset(): Trial set up with start = (6, 5), destination = (4, 1), deadline = 30
-RoutePlanner.route_to(): destination = (4, 1)
-Environment.act(): Primary agent has reached destination! 9.91
-Simulator.run(): Trial 94
-Environment.reset(): Trial set up with start = (4, 6), destination = (7, 4), deadline = 25
-RoutePlanner.route_to(): destination = (7, 4)
-Environment.act(): Primary agent has reached destination! 7.9
-Simulator.run(): Trial 95
-Environment.reset(): Trial set up with start = (2, 6), destination = (3, 1), deadline = 30
-RoutePlanner.route_to(): destination = (3, 1)
-Environment.act(): Primary agent has reached destination! 9.84
-Simulator.run(): Trial 96
-Environment.reset(): Trial set up with start = (6, 2), destination = (2, 2), deadline = 20
-RoutePlanner.route_to(): destination = (2, 2)
-Environment.act(): Primary agent has reached destination! 5.94
-Simulator.run(): Trial 97
-Environment.reset(): Trial set up with start = (8, 4), destination = (1, 1), deadline = 50
-RoutePlanner.route_to(): destination = (1, 1)
-penalty =[
-Environment.act(): Primary agent has reached destination! 31.17
-Simulator.run(): Trial 98
-Environment.reset(): Trial set up with start = (8, 5), destination = (3, 2), deadline = 40
-RoutePlanner.route_to(): destination = (3, 2)
-Environment.act(): Primary agent has reached destination! 13.79
-Simulator.run(): Trial 99
-Environment.reset(): Trial set up with start = (3, 2), destination = (8, 6), deadline = 45
-RoutePlanner.route_to(): destination = (8, 6)
-penalty =[
-Environment.act(): Primary agent has reached destination! 14.82
-```
-
-This problem requires penalties to be avoided, cars aren't supposed to crash, they must protect their passengers.  
-Even if it means you'll be late to a meeting. this is what I had in mind while tweaking the values, keeping the reward not only positive, but keeping the whole smartcab experience safe.
+This problem requires penalties to be avoided, cars aren't supposed to crash, they must protect their passengers. That's the most essential rule.  
+Even if it means you'll be late to a meeting. This is what I had in mind while tweaking the values, keeping the reward not only positive, but keeping the whole smartcab experience safe.

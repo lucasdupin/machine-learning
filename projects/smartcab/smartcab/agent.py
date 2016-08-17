@@ -15,18 +15,21 @@ class LearningAgent(Agent):
         self.alpha = 0.1
         self.gamma = -0.01
         self.possible_actions = ('forward', 'left', 'right', None);
+        self.state = {};
+        self.random_choice = 0.2
+        self.number_of_penalties = 0
         self.total_reward = 0
+        self.out_of_time = 0
 
     def reset(self, destination=None):
         self.planner.route_to(destination)
-        self.state = {};
-        self.total_reward = 0
 
     def update(self, t):
         # Gather inputs
         self.next_waypoint = self.planner.next_waypoint()  # from route planner, also displayed by simulator
         inputs = self.env.sense(self)
         deadline = self.env.get_deadline(self)
+        self.deadline = deadline
 
         # Update state
         self.state = {
@@ -46,14 +49,14 @@ class LearningAgent(Agent):
 
         # Select action according to your policy
         action = random.choice(self.possible_actions)
-        if (random.random() > 0.01): # Avoid getting locked in local optima
+        if (random.random() > self.random_choice): # Avoid getting locked in local optima
             q_values = [(action, self.q_table[state_hash][action]) for action in self.possible_actions]
             action = q_values[np.argmax(q_values, axis=0)[1]][0]
 
         # Execute action and get reward
         reward = self.env.act(self, action) + self.gamma
         if reward < self.gamma:
-            print "penalty =["
+            self.number_of_penalties +=  1
         self.total_reward += reward
 
         # Learn policy based on state, action, reward
@@ -76,7 +79,26 @@ def run():
     sim = Simulator(e, update_delay=0, display=False)
     # NOTE: To speed up simulation, reduce update_delay and/or set display=False
 
-    sim.run(n_trials=100)  # run for a specified number of trials
+    for r_choice in (0.0, 0.1, 0.5):
+        a.state = {}
+        a.random_choice = r_choice
+        sim.run(n_trials=100)  # run for a specified number of trials
+
+        for alpha in (0.1, 0.5):
+            a.alpha = alpha
+            for gamma in (-0.1, -1):
+                a.gamma = gamma
+
+                # # disable random choices and do it again
+                a.random_choice = 0
+                a.total_reward = 0 # Sum rewards
+                a.number_of_penalties = 0
+                a.out_of_time = 0
+                # a.success = 0
+
+                sim.run(n_trials=10)
+                print "|    %s  |    %1.2f  | %1.2f | %s    |    %s |    %s |" % (r_choice, a.alpha, a.gamma, a.total_reward/10, a.number_of_penalties/10, a.out_of_time)
+
     # NOTE: To quit midway, press Esc or close pygame window, or hit Ctrl+C on the command-line
 
 
