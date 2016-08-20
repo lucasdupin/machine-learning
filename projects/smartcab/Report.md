@@ -93,43 +93,58 @@ I also implemented a feature to avoid getting stuck in local optima, by randomly
 
 **QUESTION:** Report the different values for the parameters tuned in your basic implementation of Q-Learning. For which set of parameters does the agent perform best? How well does the final driving agent perform?
 
-The parameters used for tuning were: "alpha", "gamma", "number of trials" and "random direction rate".
-After training the algorithm for 100 times, I turned off "random choices" to be able to compute the results without stochasticity.
+The parameters used for tuning were: "alpha", "action_cost", "number of trials" and "random direction rate".
+"Action Cost", in this case, represents a cost for an action.  
+After training the algorithm 100 times, I turned off "random choices" to be able to compute the results without stochasticity.
 Please consider the following table:
 
-| Random rate | Alpha | Gamma  | Mean score | number of penalties | out of time |
+| Random rate | Alpha | Action Cost  | Mean score | number of penalties in 100 iterations | out of time |
 | ----------- | ----- | ------ | ----------- | ------------------- | ----------- |
-|    0.0  |    0.10  | -0.10 | 21.13    |    0 |    0 |
-|    0.0  |    0.10  | -1.00 | 6.0    |    3 |    1 |
-|    0.0  |    0.50  | -0.10 | 22.07    |    0 |    0 |
-|    0.0  |    0.50  | -1.00 | 8.5    |    1 |    0 |
-|    0.1  |    0.10  | -0.10 | 22.74    |    0 |    0 |
-|    0.1  |    0.10  | -1.00 | 10.8    |    0 |    0 |
-|    0.1  |    0.50  | -0.10 | 21.51    |    0 |    0 |
-|    0.1  |    0.50  | -1.00 | 11.1    |    0 |    0 |
-|    0.5  |    0.10  | -0.10 | 18.85    |    0 |    0 |
-|    0.5  |    0.10  | -1.00 | 10.5    |    0 |    0 |
-|    0.5  |    0.50  | -0.10 | 19.4    |    0 |    0 |
-|    0.5  |    0.50  | -1.00 | 9.3    |    0 |    0 |
+|    0.0  |    0.10  | -0.10 | 19.99 | 4    |    1 |
+|    0.0  |    0.10  | -1.00 | 7.25 | 35    |    0 |
+|    0.0  |    0.50  | -0.10 | 19.45 | 4    |    0 |
+|    0.0  |    0.50  | -1.00 | 11.10 | 3    |    0 |
+|    0.1  |    0.10  | -0.10 | 19.70 | 1    |    0 |
+|    0.1  |    0.10  | -1.00 | 9.65 | 1    |    0 |
+|    0.1  |    0.50  | -0.10 | 20.27 | 1    |    0 |
+|    0.1  |    0.50  | -1.00 | 10.50 | 1    |    0 |
+|    0.5  |    0.10  | -0.10 | 22.80 | 0    |    0 |
+|    0.5  |    0.10  | -1.00 | 7.50 | 0    |    0 |
+|    0.5  |    0.50  | -0.10 | 23.71 | 1    |    0 |
+|    0.5  |    0.50  | -1.00 | 8.00 | 1    |    0 |
 
 I also tried to incorporate *deadline* into the state but it takes too long to train without any perceived improvement.
 
 **Random rates** bigger than 0 keep Q from getting stuck. It's clear that the worst results had `random_choice = 0`  
 **Alpha** only makes a difference when `random_choice` is set to 0, this happens because it's easier to make the algorithm change it's mind with higher alphas.  
-**Gammas** closer to 0 result in no penalties, since there it's ok to take longer to reach the destination, and it ended up not affecting the number of times we ran out of time.  
+**Action cost** closer to 0 result in less penalties, since there it's ok to take longer to reach the destination, and it ended up not affecting the number of times we ran out of time.  
 
-I consider the model well trained since the final reward is always positive and most of the time there are no penalties and the number of steps is met.
+I consider the model well trained since the final reward is always positive, it usually takes only 1 penalty after 100 iterations and and the number of steps is met.
 
 Optimal set:
 ```
 random rate: 0.1
-alpha: 0.1
-gamma: -0.1
+alpha: 0.5
+action_cost: -0.1
+with final score: 23.71
 ```
 
 **QUESTION:** Does your agent get close to finding an optimal policy, i.e. reach the destination in the minimum possible time, and not incur any penalties? How would you describe an optimal policy for this problem?
 
-After a couple iterations it already starts to take fewer penalties, and after trained, with the optimal set mentioned above, it's more than satisfactory.
-
 This problem requires penalties to be avoided, cars aren't supposed to crash, they must protect their passengers. That's the most essential rule.  
-Even if it means you'll be late to a meeting. This is what I had in mind while tweaking the values, keeping the reward not only positive, but keeping the whole smartcab experience safe.
+This is what I had in mind while tweaking the values, keeping the reward not only positive, but keeping the whole smartcab experience safe.
+
+And yes, it gets close to the optimal policy, having usually 1 penalty after 100 runs. Here is a list of penalties taken:
+
+```
+penalty for action forward at state: {'light': 'red', 'oncoming': None, 'right': None, 'next_waypoint': 'forward', 'left': 'left'}
+penalty for action right at state: {'light': 'red', 'oncoming': 'forward', 'right': None, 'next_waypoint': 'forward', 'left': 'forward'}
+penalty for action left at state: {'light': 'green', 'oncoming': 'forward', 'right': None, 'next_waypoint': 'right', 'left': None}
+penalty for action left at state: {'light': 'red', 'oncoming': None, 'right': 'forward', 'next_waypoint': 'forward', 'left': None}
+penalty for action right at state: {'light': 'red', 'oncoming': None, 'right': None, 'next_waypoint': 'forward', 'left': 'right'}
+penalty for action left at state: {'light': 'red', 'oncoming': None, 'right': 'left', 'next_waypoint': 'forward', 'left': None}
+penalty for action right at state: {'light': 'red', 'oncoming': None, 'right': 'left', 'next_waypoint': 'left', 'left': None}
+penalty for action left at state: {'light': 'red', 'oncoming': None, 'right': 'forward', 'next_waypoint': 'left', 'left': None}
+```
+
+Analyzing the penalties, we notice that the most common situation is when the traffic lights are red, and the cab tries to turn left.
