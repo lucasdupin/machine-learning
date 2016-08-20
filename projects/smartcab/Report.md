@@ -134,7 +134,9 @@ with final score: 23.71
 This problem requires penalties to be avoided, cars aren't supposed to crash, they must protect their passengers. That's the most essential rule.  
 This is what I had in mind while tweaking the values, keeping the reward not only positive, but keeping the whole smartcab experience safe.
 
-And yes, it gets close to the optimal policy, having usually 1 penalty after 100 runs. Here is a list of penalties taken:
+And yes, it gets close to the optimal policy, having usually 1 penalty after 100 runs. 
+After training the algorithm for 100 times, I turned off all random actions and ran it again 100 times, using the resulting Q table.
+Here is a list of penalties taken, with the trained Q table:
 
 ```
 penalty for action forward at state: {'light': 'red', 'oncoming': None, 'right': None, 'next_waypoint': 'forward', 'left': 'left'}
@@ -148,3 +150,6 @@ penalty for action left at state: {'light': 'red', 'oncoming': None, 'right': 'f
 ```
 
 Analyzing the penalties, we notice that the most common situation is when the traffic lights are red, and the cab tries to turn left.
+
+Obiviously, while training, it starts behaving randomly and learns over time. Starting with high bias, and moving to a point where the current model saturates.  
+During the first 10 trials I was seing a sum of 18 penalties, with the optimal parameters, moving 0 on the last ten. Even though 0 is a great number it's important to know that running that optimal, saturated model, for 100 times again, I still get 1 penalty sometimes.
